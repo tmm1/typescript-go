@@ -330,6 +330,11 @@ func (p *Program) getSemanticDiagnosticsForFile(sourceFile *ast.SourceFile) []*a
 			diags = append(diags, checker.GetDiagnosticsWithoutCheck(sourceFile)...)
 		}
 	}
+	for _, directive := range sourceFile.CommentDirectives {
+		if directive.Kind == ast.CommentDirectiveKindNoCheck {
+			return nil
+		}
+	}
 	if len(sourceFile.CommentDirectives) == 0 {
 		return diags
 	}

@@ -8680,6 +8680,7 @@ const (
 	CommentDirectiveKindUnknown CommentDirectiveKind = iota
 	CommentDirectiveKindExpectError
 	CommentDirectiveKindIgnore
+	CommentDirectiveKindNoCheck
 )
 
 type CommentDirective struct {

@@ -941,6 +941,8 @@ func (s *Scanner) processCommentDirective(start int, end int, multiline bool) {
 		kind = ast.CommentDirectiveKindExpectError
 	case strings.HasPrefix(s.text[pos:], "ts-ignore"):
 		kind = ast.CommentDirectiveKindIgnore
+	case strings.HasPrefix(s.text[pos:], "ts-nocheck"):
+		kind = ast.CommentDirectiveKindNoCheck
 	default:
 		return
 	}
