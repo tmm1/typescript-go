@@ -323,19 +323,16 @@ func (p *Program) getSemanticDiagnosticsForFile(sourceFile *ast.SourceFile) []*a
 	diags := slices.Clip(sourceFile.BindDiagnostics())
 	// Ask for diags from all checkers; checking one file may add diagnostics to other files.
 	// These are deduplicated later.
-	for _, checker := range p.checkers {
-		if sourceFile == nil || checker == fileChecker {
-			diags = append(diags, checker.GetDiagnostics(sourceFile)...)
-		} else {
-			diags = append(diags, checker.GetDiagnosticsWithoutCheck(sourceFile)...)
+	if !sourceFile.NoCheck {
+		for _, checker := range p.checkers {
+			if sourceFile == nil || checker == fileChecker {
+				diags = append(diags, checker.GetDiagnostics(sourceFile)...)
+			} else {
+				diags = append(diags, checker.GetDiagnosticsWithoutCheck(sourceFile)...)
+			}
 		}
 	}
-	for _, directive := range sourceFile.CommentDirectives {
-		if directive.Kind == ast.CommentDirectiveKindNoCheck {
-			return nil
-		}
-	}
-	if len(sourceFile.CommentDirectives) == 0 {
+	if sourceFile.NoCheck || len(sourceFile.CommentDirectives) == 0 {
 		return diags
 	}
 	// Build map of directives by line number

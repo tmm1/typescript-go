@@ -235,7 +235,8 @@ type ScannerState struct {
 	tokenValue                string         // Parsed value of current token
 	tokenFlags                ast.TokenFlags // Flags for current token
 	commentDirectives         []ast.CommentDirective
-	skipJSDocLeadingAsterisks int // Leading asterisks to skip when scanning types inside JSDoc. Should be 0 outside JSDoc
+	skipJSDocLeadingAsterisks int  // Leading asterisks to skip when scanning types inside JSDoc. Should be 0 outside JSDoc
+	noCheck                   bool // Saw @ts-nocheck comment
 }
 
 type Scanner struct {
@@ -303,6 +304,10 @@ func (s *Scanner) TokenRange() core.TextRange {
 
 func (s *Scanner) CommentDirectives() []ast.CommentDirective {
 	return s.commentDirectives
+}
+
+func (s *Scanner) NoCheck() bool {
+	return s.noCheck
 }
 
 func (s *Scanner) Mark() ScannerState {
@@ -942,7 +947,8 @@ func (s *Scanner) processCommentDirective(start int, end int, multiline bool) {
 	case strings.HasPrefix(s.text[pos:], "ts-ignore"):
 		kind = ast.CommentDirectiveKindIgnore
 	case strings.HasPrefix(s.text[pos:], "ts-nocheck"):
-		kind = ast.CommentDirectiveKindNoCheck
+		s.noCheck = true
+		return
 	default:
 		return
 	}

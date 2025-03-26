@@ -317,6 +317,7 @@ func (p *Parser) parseSourceFileWorker() *ast.SourceFile {
 
 func (p *Parser) finishSourceFile(result *ast.SourceFile, isDeclarationFile bool) {
 	result.CommentDirectives = p.scanner.CommentDirectives()
+	result.NoCheck = p.scanner.NoCheck()
 	result.Pragmas = getCommentPragmas(&p.factory, p.sourceText)
 	processPragmasIntoFields(result)
 	result.SetDiagnostics(attachFileToDiagnostics(p.diagnostics, result))

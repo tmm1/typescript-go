@@ -8680,7 +8680,6 @@ const (
 	CommentDirectiveKindUnknown CommentDirectiveKind = iota
 	CommentDirectiveKindExpectError
 	CommentDirectiveKindIgnore
-	CommentDirectiveKindNoCheck
 )
 
 type CommentDirective struct {
@@ -8728,6 +8727,7 @@ type SourceFile struct {
 	ReferencedFiles             []*FileReference
 	TypeReferenceDirectives     []*FileReference
 	LibReferenceDirectives      []*FileReference
+	NoCheck                     bool
 
 	// Fields set by binder
 
