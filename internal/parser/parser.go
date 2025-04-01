@@ -6496,10 +6496,6 @@ func extractPragmas(commentRange ast.CommentRange, text string) []ast.Pragma {
 		return []ast.Pragma{pragma}
 	}
 
-	// const singleLine = range.kind === SyntaxKind.SingleLineCommentTrivia && singleLinePragmaRegEx.exec(text);
-	// if (singleLine) {
-	//     return addPragmaForMatch(pragmas, range, PragmaKindFlags.SingleLine, singleLine);
-	// }
 	if commentRange.Kind == ast.KindSingleLineCommentTrivia {
 		matches = singleLinePragmaRegEx.FindStringSubmatch(text)
 	}
