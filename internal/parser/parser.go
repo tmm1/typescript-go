@@ -6571,9 +6571,7 @@ func processPragmasIntoFields(context *ast.SourceFile /* !!! reportDiagnostic fu
 			} else {
 				// reportDiagnostic(argMap.Pos, argMap.End-argMap.Pos, "Invalid reference directive syntax")
 			}
-		case "ts-nocheck":
-			fallthrough
-		case "ts-check":
+		case "ts-check", "ts-nocheck":
 			// _last_ of either nocheck or check in a file is the "winner"
 			for _, directive := range context.Pragmas {
 				if context.CheckJsDirective == nil || directive.ArgsRange.Pos() > context.CheckJsDirective.Range.Pos() {
