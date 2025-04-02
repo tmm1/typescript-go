@@ -321,9 +321,6 @@ func (p *Program) getSemanticDiagnosticsForFile(sourceFile *ast.SourceFile) []*a
 	}
 
 	diags := slices.Clip(sourceFile.BindDiagnostics())
-	if sourceFile.CheckJsDirective != nil && !sourceFile.CheckJsDirective.Enabled {
-		return diags
-	}
 	// Ask for diags from all checkers; checking one file may add diagnostics to other files.
 	// These are deduplicated later.
 	for _, checker := range p.checkers {
@@ -333,7 +330,8 @@ func (p *Program) getSemanticDiagnosticsForFile(sourceFile *ast.SourceFile) []*a
 			diags = append(diags, checker.GetDiagnosticsWithoutCheck(sourceFile)...)
 		}
 	}
-	if len(sourceFile.CommentDirectives) == 0 {
+	if len(sourceFile.CommentDirectives) == 0 ||
+		sourceFile.CheckJsDirective != nil && !sourceFile.CheckJsDirective.Enabled {
 		return diags
 	}
 	// Build map of directives by line number
