@@ -325,16 +325,11 @@ func (p *Program) getSemanticDiagnosticsForFile(sourceFile *ast.SourceFile) []*a
 	}
 
 	var fileChecker *checker.Checker
-	var noCheckEnabled bool
 	if sourceFile != nil {
 		fileChecker = p.GetTypeCheckerForFile(sourceFile)
-		noCheckEnabled = sourceFile.CheckJsDirective != nil && !sourceFile.CheckJsDirective.Enabled
 	}
 
 	diags := slices.Clip(sourceFile.BindDiagnostics())
-	if noCheckEnabled {
-		return diags
-	}
 	// Ask for diags from all checkers; checking one file may add diagnostics to other files.
 	// These are deduplicated later.
 	for _, checker := range p.checkers {
