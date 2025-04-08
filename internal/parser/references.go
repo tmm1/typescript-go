@@ -35,7 +35,7 @@ func (p *Parser) collectExternalModuleReferences(file *ast.SourceFile) {
 	// run. We synthesize a helpers import for it just in case; it will never be used if
 	// the binder doesn't find and set a `commonJSModuleIndicator`.)
 	if isJavaScriptFile || (!file.IsDeclarationFile && (options.GetIsolatedModules() || isExternalModuleFile)) {
-		if options.ImportHelpers == core.TSTrue {
+		if options.ImportHelpers.IsTrue() {
 			// synthesize 'import "tslib"' declaration
 			file.Imports = append(file.Imports, p.createSyntheticImport("tslib", file))
 		}
