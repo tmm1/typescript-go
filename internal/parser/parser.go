@@ -335,7 +335,7 @@ func (p *Parser) parseSourceFileWorker() *ast.SourceFile {
 	}
 	p.jsdocCache = nil
 	p.possibleAwaitSpans = []int{}
-	collectExternalModuleReferences(result)
+	p.collectExternalModuleReferences(result)
 	return result
 }
 

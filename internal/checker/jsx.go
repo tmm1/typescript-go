@@ -1246,7 +1246,7 @@ func (c *Checker) getJsxNamespaceContainerForImplicitImport(location *ast.Node) 
 	if links != nil && links.jsxImplicitImportContainer != nil {
 		return core.IfElse(links.jsxImplicitImportContainer == c.unknownSymbol, nil, links.jsxImplicitImportContainer)
 	}
-	runtimeImportSpecifier := getJSXRuntimeImport(getJSXImplicitImportBase(c.compilerOptions, file), c.compilerOptions)
+	runtimeImportSpecifier := GetJSXRuntimeImport(GetJSXImplicitImportBase(c.compilerOptions, file), c.compilerOptions)
 	if runtimeImportSpecifier == "" {
 		return nil
 	}
@@ -1274,7 +1274,7 @@ func (c *Checker) getJSXRuntimeImportSpecifier(file *ast.SourceFile, specifierTe
 	return specifier
 }
 
-func getJSXImplicitImportBase(compilerOptions *core.CompilerOptions, file *ast.SourceFile) string {
+func GetJSXImplicitImportBase(compilerOptions *core.CompilerOptions, file *ast.SourceFile) string {
 	jsxImportSourcePragma := getPragmaFromSourceFile(file, "jsximportsource")
 	jsxRuntimePragma := getPragmaFromSourceFile(file, "jsxruntime")
 	if getPragmaArgument(jsxRuntimePragma, "factory") == "classic" {
@@ -1297,7 +1297,7 @@ func getJSXImplicitImportBase(compilerOptions *core.CompilerOptions, file *ast.S
 	return ""
 }
 
-func getJSXRuntimeImport(base string, options *core.CompilerOptions) string {
+func GetJSXRuntimeImport(base string, options *core.CompilerOptions) string {
 	if base == "" {
 		return base
 	}

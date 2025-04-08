@@ -4,28 +4,47 @@ import (
 	"strings"
 
 	"github.com/microsoft/typescript-go/internal/ast"
+	"github.com/microsoft/typescript-go/internal/checker"
 	"github.com/microsoft/typescript-go/internal/core"
 	"github.com/microsoft/typescript-go/internal/tspath"
 )
 
-func collectExternalModuleReferences(file *ast.SourceFile) {
+func (p *Parser) createSyntheticImport(text string, file *ast.SourceFile) *ast.Node {
+	externalHelpersModuleReference := p.factory.NewStringLiteral(text)
+	importDecl := p.factory.NewImportDeclaration(nil /*modifiers*/, nil /*importClause*/, externalHelpersModuleReference, nil)
 	// !!!
+	// addInternalEmitFlags(importDecl, InternalEmitFlags.NeverApplyImportHelper);
+	externalHelpersModuleReference.Parent = importDecl
+	importDecl.Parent = file.AsNode()
+	// explicitly unset the synthesized flag on these declarations so the checker API will answer questions about them
+	// (which is required to build the dependency graph for incremental emit)
+	externalHelpersModuleReference.Flags &= ^ast.NodeFlagsSynthesized
+	importDecl.Flags &= ^ast.NodeFlagsSynthesized
+	return externalHelpersModuleReference
+}
+
+func (p *Parser) collectExternalModuleReferences(file *ast.SourceFile) {
+	isJavaScriptFile := ast.IsInJSFile(file.AsNode())
+	isExternalModuleFile := ast.IsExternalModule(file)
+	// !!!
+	var options *core.CompilerOptions
+
 	// If we are importing helpers, we need to add a synthetic reference to resolve the
 	// helpers library. (A JavaScript file without `externalModuleIndicator` set might be
 	// a CommonJS module; `commonJSModuleIndicator` doesn't get set until the binder has
 	// run. We synthesize a helpers import for it just in case; it will never be used if
 	// the binder doesn't find and set a `commonJSModuleIndicator`.)
-	// if (isJavaScriptFile || (!file.isDeclarationFile && (getIsolatedModules(options) || isExternalModule(file)))) {
-	// 	if (options.importHelpers) {
-	// 		// synthesize 'import "tslib"' declaration
-	// 		imports = [createSyntheticImport(externalHelpersModuleNameText, file)];
-	// 	}
-	// 	const jsxImport = getJSXRuntimeImport(getJSXImplicitImportBase(options, file), options);
-	// 	if (jsxImport) {
-	// 		// synthesize `import "base/jsx-runtime"` declaration
-	// 		(imports ||= []).push(createSyntheticImport(jsxImport, file));
-	// 	}
-	// }
+	if isJavaScriptFile || (!file.IsDeclarationFile && (options.GetIsolatedModules() || isExternalModuleFile)) {
+		if options.ImportHelpers == core.TSTrue {
+			// synthesize 'import "tslib"' declaration
+			file.Imports = append(file.Imports, p.createSyntheticImport("tslib", file))
+		}
+		jsxImport := checker.GetJSXRuntimeImport(checker.GetJSXImplicitImportBase(options, file), options)
+		if jsxImport != "" {
+			// synthesize `import "base/jsx-runtime"` declaration
+			file.Imports = append(file.Imports, p.createSyntheticImport(jsxImport, file))
+		}
+	}
 	for _, node := range file.Statements.Nodes {
 		collectModuleReferences(file, node, false /*inAmbientModule*/)
 	}
