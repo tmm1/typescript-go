@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"log"
 	"strings"
 
 	"github.com/microsoft/typescript-go/internal/ast"
@@ -87,7 +86,7 @@ func (p *Parser) collectExternalModuleReferences(file *ast.SourceFile, options *
 			// synthesize 'import "tslib"' declaration
 			file.Imports = append(file.Imports, p.createSyntheticImport("tslib", file))
 		}
-		jsxImport := checker.GetJSXRuntimeImport(checker.GetJSXImplicitImportBase(options, file), options)
+		jsxImport := GetJSXRuntimeImport(GetJSXImplicitImportBase(options, file), options)
 		if jsxImport != "" {
 			// synthesize `import "base/jsx-runtime"` declaration
 			file.Imports = append(file.Imports, p.createSyntheticImport(jsxImport, file))
