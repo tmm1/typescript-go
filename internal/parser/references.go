@@ -1,13 +1,63 @@
 package parser
 
 import (
+	"log"
 	"strings"
 
 	"github.com/microsoft/typescript-go/internal/ast"
-	"github.com/microsoft/typescript-go/internal/checker"
 	"github.com/microsoft/typescript-go/internal/core"
 	"github.com/microsoft/typescript-go/internal/tspath"
 )
+
+func getPragmaArgument(pragma *ast.Pragma, name string) string {
+	if pragma != nil {
+		if arg, ok := pragma.Args[name]; ok {
+			return arg.Value
+		}
+	}
+	return ""
+}
+
+func GetPragmaFromSourceFile(file *ast.SourceFile, name string) *ast.Pragma {
+	if file != nil {
+		for i := range file.Pragmas {
+			if file.Pragmas[i].Name == name {
+				return &file.Pragmas[i]
+			}
+		}
+	}
+	return nil
+}
+
+func GetJSXImplicitImportBase(compilerOptions *core.CompilerOptions, file *ast.SourceFile) string {
+	jsxImportSourcePragma := GetPragmaFromSourceFile(file, "jsximportsource")
+	jsxRuntimePragma := GetPragmaFromSourceFile(file, "jsxruntime")
+	if getPragmaArgument(jsxRuntimePragma, "factory") == "classic" {
+		return ""
+	}
+	if compilerOptions.Jsx == core.JsxEmitReactJSX ||
+		compilerOptions.Jsx == core.JsxEmitReactJSXDev ||
+		compilerOptions.JsxImportSource != "" ||
+		jsxImportSourcePragma != nil ||
+		getPragmaArgument(jsxRuntimePragma, "factory") == "automatic" {
+		result := getPragmaArgument(jsxImportSourcePragma, "factory")
+		if result == "" {
+			result = compilerOptions.JsxImportSource
+		}
+		if result == "" {
+			result = "react"
+		}
+		return result
+	}
+	return ""
+}
+
+func GetJSXRuntimeImport(base string, options *core.CompilerOptions) string {
+	if base == "" {
+		return base
+	}
+	return base + "/" + core.IfElse(options.Jsx == core.JsxEmitReactJSXDev, "jsx-dev-runtime", "jsx-runtime")
+}
 
 func (p *Parser) createSyntheticImport(text string, file *ast.SourceFile) *ast.Node {
 	externalHelpersModuleReference := p.factory.NewStringLiteral(text)
@@ -23,18 +73,16 @@ func (p *Parser) createSyntheticImport(text string, file *ast.SourceFile) *ast.N
 	return externalHelpersModuleReference
 }
 
-func (p *Parser) collectExternalModuleReferences(file *ast.SourceFile) {
+func (p *Parser) collectExternalModuleReferences(file *ast.SourceFile, options *core.CompilerOptions) {
 	isJavaScriptFile := ast.IsInJSFile(file.AsNode())
 	isExternalModuleFile := ast.IsExternalModule(file)
-	// !!!
-	var options *core.CompilerOptions
 
 	// If we are importing helpers, we need to add a synthetic reference to resolve the
 	// helpers library. (A JavaScript file without `externalModuleIndicator` set might be
 	// a CommonJS module; `commonJSModuleIndicator` doesn't get set until the binder has
 	// run. We synthesize a helpers import for it just in case; it will never be used if
 	// the binder doesn't find and set a `commonJSModuleIndicator`.)
-	if isJavaScriptFile || (!file.IsDeclarationFile && (options.GetIsolatedModules() || isExternalModuleFile)) {
+	if options != nil && (isJavaScriptFile || (!file.IsDeclarationFile && (options.GetIsolatedModules() || isExternalModuleFile))) {
 		if options.ImportHelpers.IsTrue() {
 			// synthesize 'import "tslib"' declaration
 			file.Imports = append(file.Imports, p.createSyntheticImport("tslib", file))

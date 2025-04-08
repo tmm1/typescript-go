@@ -460,7 +460,7 @@ func (h *cachedCompilerHost) GetSourceFile(fileName string, path tspath.Path, la
 		sourceFile = parser.ParseJSONText(fileName, path, text)
 	} else {
 		// !!! JSDocParsingMode
-		sourceFile = parser.ParseSourceFile(fileName, path, text, languageVersion, scanner.JSDocParsingModeParseAll)
+		sourceFile = parser.ParseSourceFile(fileName, path, text, languageVersion, scanner.JSDocParsingModeParseAll, h.options)
 	}
 
 	result, _ := sourceFileCache.LoadOrStore(key, sourceFile)

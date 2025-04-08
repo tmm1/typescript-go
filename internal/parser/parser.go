@@ -94,12 +94,12 @@ func putParser(p *Parser) {
 	parserPool.Put(p)
 }
 
-func ParseSourceFile(fileName string, path tspath.Path, sourceText string, languageVersion core.ScriptTarget, jsdocParsingMode scanner.JSDocParsingMode) *ast.SourceFile {
+func ParseSourceFile(fileName string, path tspath.Path, sourceText string, languageVersion core.ScriptTarget, jsdocParsingMode scanner.JSDocParsingMode, compilerOptions *core.CompilerOptions) *ast.SourceFile {
 	p := getParser()
 	defer putParser(p)
 	p.initializeState(fileName, path, sourceText, languageVersion, core.ScriptKindUnknown, jsdocParsingMode)
 	p.nextToken()
-	return p.parseSourceFileWorker()
+	return p.parseSourceFileWorker(compilerOptions)
 }
 
 func ParseJSONText(fileName string, path tspath.Path, sourceText string) *ast.SourceFile {
@@ -310,7 +310,7 @@ func (p *Parser) hasPrecedingJSDocComment() bool {
 	return p.scanner.HasPrecedingJSDocComment()
 }
 
-func (p *Parser) parseSourceFileWorker() *ast.SourceFile {
+func (p *Parser) parseSourceFileWorker(compilerOptions *core.CompilerOptions) *ast.SourceFile {
 	isDeclarationFile := tspath.IsDeclarationFileName(p.fileName)
 	if isDeclarationFile {
 		p.contextFlags |= ast.NodeFlagsAmbient
@@ -335,7 +335,7 @@ func (p *Parser) parseSourceFileWorker() *ast.SourceFile {
 	}
 	p.jsdocCache = nil
 	p.possibleAwaitSpans = []int{}
-	p.collectExternalModuleReferences(result)
+	p.collectExternalModuleReferences(result, compilerOptions)
 	return result
 }
 
