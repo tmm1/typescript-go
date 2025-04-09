@@ -263,17 +263,6 @@ func (p *Program) findSourceFile(candidate string, reason FileIncludeReason) *as
 	return p.filesByPath[path]
 }
 
-func getModuleNames(file *ast.SourceFile) []*ast.Node {
-	res := slices.Clone(file.Imports)
-	for _, imp := range file.ModuleAugmentations {
-		if imp.Kind == ast.KindStringLiteral {
-			res = append(res, imp)
-		}
-		// Do nothing if it's an Identifier; we don't need to do module resolution for `declare global`.
-	}
-	return res
-}
-
 func (p *Program) GetSyntacticDiagnostics(sourceFile *ast.SourceFile) []*ast.Diagnostic {
 	return p.getDiagnosticsHelper(sourceFile, false /*ensureBound*/, false /*ensureChecked*/, p.getSyntacticDiagnosticsForFile)
 }
@@ -679,4 +668,15 @@ type FileIncludeReason struct {
 // e.g. extensions that are not yet supported by the port.
 func (p *Program) UnsupportedExtensions() []string {
 	return p.unsupportedExtensions
+}
+
+func (p *Program) GetJSXRuntimeImportSpecifier(sourceFile *ast.SourceFile) (moduleReference string, specifier *ast.Node) {
+	if result := p.jsxRuntimeImportSpecifiers[sourceFile]; result != nil {
+		return result.moduleReference, result.specifier
+	}
+	return "", nil
+}
+
+func (p *Program) GetImportHelpersImportSpecifier(sourceFile *ast.SourceFile) *ast.Node {
+	return p.importHelpersImportSpecifiers[sourceFile]
 }

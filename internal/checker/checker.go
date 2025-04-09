@@ -525,6 +525,8 @@ type Program interface {
 	GetImpliedNodeFormatForEmit(sourceFile *ast.SourceFile) core.ModuleKind
 	GetResolvedModule(currentSourceFile *ast.SourceFile, moduleReference string) *ast.SourceFile
 	GetSourceFileMetaData(path tspath.Path) *ast.SourceFileMetaData
+	GetJSXRuntimeImportSpecifier(sourceFile *ast.SourceFile) (moduleReference string, specifier *ast.Node)
+	GetImportHelpersImportSpecifier(sourceFile *ast.SourceFile) *ast.Node
 }
 
 type Host interface{}
