@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/microsoft/typescript-go/internal/compiler"
@@ -49,7 +50,7 @@ func (w *watcher) hasErrorsInTsConfig() bool {
 			}
 			return true
 		}
-		if w.options.CompilerOptions() != configParseResult.CompilerOptions() {
+		if !reflect.DeepEqual(w.options.CompilerOptions(), configParseResult.CompilerOptions()) {
 			// fmt.Fprint(w.sys.Writer(), "build triggered due to config change", w.sys.NewLine())
 			w.configModified = true
 		}
