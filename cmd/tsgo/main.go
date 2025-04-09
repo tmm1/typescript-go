@@ -198,9 +198,9 @@ func runMain() int {
 	}
 
 	var bindTime, checkTime time.Duration
-	var targetSourcefile *ast.SourceFile
+	var targetSourceFile *ast.SourceFile
 	if opts.devel.targetFile != "" {
-		targetSourcefile = program.GetSourceFile(opts.devel.targetFile)
+		targetSourceFile = program.GetSourceFile(opts.devel.targetFile)
 	}
 
 	diagnostics := program.GetConfigFileParsingDiagnostics()
@@ -209,19 +209,19 @@ func runMain() int {
 		return 1
 	}
 
-	diagnostics = program.GetSyntacticDiagnostics(targetSourcefile)
+	diagnostics = program.GetSyntacticDiagnostics(targetSourceFile)
 	if len(diagnostics) == 0 {
 		if opts.devel.printTypes {
 			program.PrintSourceFileWithTypes()
 		} else {
 			bindStart := time.Now()
-			_ = program.GetBindDiagnostics(targetSourcefile)
+			_ = program.GetBindDiagnostics(targetSourceFile)
 			bindTime = time.Since(bindStart)
 
 			// !!! the checker already reads noCheck, but do it here just for stats printing for now
 			if compilerOptions.NoCheck.IsFalseOrUnknown() {
 				checkStart := time.Now()
-				diagnostics = slices.Concat(program.GetGlobalDiagnostics(), program.GetSemanticDiagnostics(targetSourcefile))
+				diagnostics = slices.Concat(program.GetGlobalDiagnostics(), program.GetSemanticDiagnostics(targetSourceFile))
 				checkTime = time.Since(checkStart)
 			}
 		}
@@ -231,8 +231,8 @@ func runMain() int {
 	if compilerOptions.NoEmit.IsFalseOrUnknown() {
 		emitStart := time.Now()
 		emitOptions := ts.EmitOptions{}
-		if opts.devel.targetFile != "" {
-			emitOptions.TargetSourceFile = targetSourcefile
+		if targetSourceFile != nil {
+			emitOptions.TargetSourceFile = targetSourceFile
 		}
 		result := program.Emit(emitOptions)
 		diagnostics = append(diagnostics, result.Diagnostics...)
