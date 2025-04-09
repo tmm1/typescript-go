@@ -50,6 +50,7 @@ func (w *watcher) hasErrorsInTsConfig() bool {
 			return true
 		}
 		if w.options.CompilerOptions() != configParseResult.CompilerOptions() {
+			// fmt.Fprint(w.sys.Writer(), "build triggered due to config change", w.sys.NewLine())
 			w.configModified = true
 		}
 		w.options = configParseResult
@@ -73,12 +74,14 @@ func (w *watcher) hasBeenModified(program *compiler.Program) bool {
 		currState[fileName] = s.ModTime()
 		if !filesModified {
 			if currState[fileName] != w.prevModified[fileName] {
+				// fmt.Fprint(w.sys.Writer(), "build triggered from ", fileName, ": ", w.prevModified[fileName], " -> ", currState[fileName], w.sys.NewLine())
 				filesModified = true
 			}
 			delete(w.prevModified, fileName)
 		}
 	}
 	if len(w.prevModified) > 0 {
+		// fmt.Fprint(w.sys.Writer(), "build triggered due to ", len(w.prevModified), " files deleted", w.sys.NewLine())
 		filesModified = true
 	}
 	w.prevModified = currState
