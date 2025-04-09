@@ -40,8 +40,8 @@ type processedFiles struct {
 	files                         []*ast.SourceFile
 	resolvedModules               map[tspath.Path]module.ModeAwareCache[*module.ResolvedModule]
 	sourceFileMetaDatas           map[tspath.Path]*ast.SourceFileMetaData
-	jsxRuntimeImportSpecifiers    map[*ast.SourceFile]*jsxRuntimeImportSpecifier
-	importHelpersImportSpecifiers map[*ast.SourceFile]*ast.Node
+	jsxRuntimeImportSpecifiers    map[tspath.Path]*jsxRuntimeImportSpecifier
+	importHelpersImportSpecifiers map[tspath.Path]*ast.Node
 }
 
 type jsxRuntimeImportSpecifier struct {
@@ -89,8 +89,8 @@ func processAllProgramFiles(
 
 	resolvedModules := make(map[tspath.Path]module.ModeAwareCache[*module.ResolvedModule], totalFileCount)
 	sourceFileMetaDatas := make(map[tspath.Path]*ast.SourceFileMetaData, totalFileCount)
-	var jsxRuntimeImportSpecifiers map[*ast.SourceFile]*jsxRuntimeImportSpecifier
-	var importHelpersImportSpecifiers map[*ast.SourceFile]*ast.Node
+	var jsxRuntimeImportSpecifiers map[tspath.Path]*jsxRuntimeImportSpecifier
+	var importHelpersImportSpecifiers map[tspath.Path]*ast.Node
 
 	for task := range loader.collectTasks(loader.rootTasks) {
 		file := task.file
@@ -104,15 +104,15 @@ func processAllProgramFiles(
 		sourceFileMetaDatas[path] = task.metadata
 		if task.jsxRuntimeImportSpecifier != nil {
 			if jsxRuntimeImportSpecifiers == nil {
-				jsxRuntimeImportSpecifiers = make(map[*ast.SourceFile]*jsxRuntimeImportSpecifier, totalFileCount)
+				jsxRuntimeImportSpecifiers = make(map[tspath.Path]*jsxRuntimeImportSpecifier, totalFileCount)
 			}
-			jsxRuntimeImportSpecifiers[file] = task.jsxRuntimeImportSpecifier
+			jsxRuntimeImportSpecifiers[path] = task.jsxRuntimeImportSpecifier
 		}
 		if task.importHelpersImportSpecifier != nil {
 			if importHelpersImportSpecifiers == nil {
-				importHelpersImportSpecifiers = make(map[*ast.SourceFile]*ast.Node, totalFileCount)
+				importHelpersImportSpecifiers = make(map[tspath.Path]*ast.Node, totalFileCount)
 			}
-			importHelpersImportSpecifiers[file] = task.importHelpersImportSpecifier
+			importHelpersImportSpecifiers[path] = task.importHelpersImportSpecifier
 		}
 	}
 	loader.sortLibs(libFiles)

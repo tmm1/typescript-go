@@ -1264,7 +1264,7 @@ func (c *Checker) getJsxNamespaceContainerForImplicitImport(location *ast.Node) 
 }
 
 func (c *Checker) getJSXRuntimeImportSpecifier(file *ast.SourceFile) (moduleReference string, specifier *ast.Node) {
-	return c.program.GetJSXRuntimeImportSpecifier(file)
+	return c.program.GetJSXRuntimeImportSpecifier(file.Path())
 }
 
 func getPragmaFromSourceFile(file *ast.SourceFile, name string) *ast.Pragma {

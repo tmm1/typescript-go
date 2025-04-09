@@ -58,11 +58,11 @@ func (p *fakeProgram) GetSourceFileMetaData(path tspath.Path) *ast.SourceFileMet
 	return nil
 }
 
-func (p *fakeProgram) GetImportHelpersImportSpecifier(sourceFile *ast.SourceFile) *ast.Node {
+func (p *fakeProgram) GetImportHelpersImportSpecifier(path tspath.Path) *ast.Node {
 	return nil
 }
 
-func (p *fakeProgram) GetJSXRuntimeImportSpecifier(sourceFile *ast.SourceFile) (moduleReference string, specifier *ast.Node) {
+func (p *fakeProgram) GetJSXRuntimeImportSpecifier(path tspath.Path) (moduleReference string, specifier *ast.Node) {
 	return "", nil
 }
 

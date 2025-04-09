@@ -670,13 +670,13 @@ func (p *Program) UnsupportedExtensions() []string {
 	return p.unsupportedExtensions
 }
 
-func (p *Program) GetJSXRuntimeImportSpecifier(sourceFile *ast.SourceFile) (moduleReference string, specifier *ast.Node) {
-	if result := p.jsxRuntimeImportSpecifiers[sourceFile]; result != nil {
+func (p *Program) GetJSXRuntimeImportSpecifier(path tspath.Path) (moduleReference string, specifier *ast.Node) {
+	if result := p.jsxRuntimeImportSpecifiers[path]; result != nil {
 		return result.moduleReference, result.specifier
 	}
 	return "", nil
 }
 
-func (p *Program) GetImportHelpersImportSpecifier(sourceFile *ast.SourceFile) *ast.Node {
-	return p.importHelpersImportSpecifiers[sourceFile]
+func (p *Program) GetImportHelpersImportSpecifier(path tspath.Path) *ast.Node {
+	return p.importHelpersImportSpecifiers[path]
 }
