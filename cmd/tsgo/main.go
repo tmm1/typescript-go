@@ -66,6 +66,7 @@ type cliOptions struct {
 		singleThreaded bool
 		printTypes     bool
 		pprofDir       string
+		targetFile     string
 	}
 }
 
@@ -109,6 +110,7 @@ func parseArgs() *cliOptions {
 	flag.BoolVar(&opts.devel.singleThreaded, "singleThreaded", false, "Run in single threaded mode.")
 	flag.BoolVar(&opts.devel.printTypes, "printTypes", false, "Print types defined in 'main.ts'.")
 	flag.StringVar(&opts.devel.pprofDir, "pprofDir", "", "Generate pprof CPU/memory profiles to the given directory.")
+	flag.StringVar(&opts.devel.targetFile, "targetFile", "", "Emit only the specific source file.")
 	flag.Parse()
 
 	if len(flag.Args()) > 0 {
@@ -196,6 +198,10 @@ func runMain() int {
 	}
 
 	var bindTime, checkTime time.Duration
+	var targetSourcefile *ast.SourceFile
+	if opts.devel.targetFile != "" {
+		targetSourcefile = program.GetSourceFile(opts.devel.targetFile)
+	}
 
 	diagnostics := program.GetConfigFileParsingDiagnostics()
 	if len(diagnostics) != 0 {
@@ -203,19 +209,19 @@ func runMain() int {
 		return 1
 	}
 
-	diagnostics = program.GetSyntacticDiagnostics(nil)
+	diagnostics = program.GetSyntacticDiagnostics(targetSourcefile)
 	if len(diagnostics) == 0 {
 		if opts.devel.printTypes {
 			program.PrintSourceFileWithTypes()
 		} else {
 			bindStart := time.Now()
-			_ = program.GetBindDiagnostics(nil)
+			_ = program.GetBindDiagnostics(targetSourcefile)
 			bindTime = time.Since(bindStart)
 
 			// !!! the checker already reads noCheck, but do it here just for stats printing for now
 			if compilerOptions.NoCheck.IsFalseOrUnknown() {
 				checkStart := time.Now()
-				diagnostics = slices.Concat(program.GetGlobalDiagnostics(), program.GetSemanticDiagnostics(nil))
+				diagnostics = slices.Concat(program.GetGlobalDiagnostics(), program.GetSemanticDiagnostics(targetSourcefile))
 				checkTime = time.Since(checkStart)
 			}
 		}
@@ -224,7 +230,11 @@ func runMain() int {
 	var emitTime time.Duration
 	if compilerOptions.NoEmit.IsFalseOrUnknown() {
 		emitStart := time.Now()
-		result := program.Emit(ts.EmitOptions{})
+		emitOptions := ts.EmitOptions{}
+		if opts.devel.targetFile != "" {
+			emitOptions.TargetSourceFile = targetSourcefile
+		}
+		result := program.Emit(emitOptions)
 		diagnostics = append(diagnostics, result.Diagnostics...)
 		emitTime = time.Since(emitStart)
 	}
