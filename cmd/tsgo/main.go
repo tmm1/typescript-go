@@ -198,10 +198,6 @@ func runMain() int {
 	}
 
 	var bindTime, checkTime time.Duration
-	var targetSourceFile *ast.SourceFile
-	if opts.devel.targetFile != "" {
-		targetSourceFile = program.GetSourceFile(opts.devel.targetFile)
-	}
 
 	diagnostics := program.GetConfigFileParsingDiagnostics()
 	if len(diagnostics) != 0 {
@@ -209,19 +205,48 @@ func runMain() int {
 		return 1
 	}
 
-	diagnostics = program.GetSyntacticDiagnostics(targetSourceFile)
+	var targetSourceFile []*ast.SourceFile
+	if opts.devel.targetFile != "" {
+		for _, fileName := range strings.Split(opts.devel.targetFile, ",") {
+			if sourceFile := program.GetSourceFile(fileName); sourceFile != nil {
+				targetSourceFile = append(targetSourceFile, sourceFile)
+			}
+		}
+	}
+
+	diagnostics = nil
+	if targetSourceFile != nil {
+		for _, sourceFile := range targetSourceFile {
+			diagnostics = slices.Concat(diagnostics, program.GetSyntacticDiagnostics(sourceFile))
+		}
+	} else {
+		diagnostics = program.GetSyntacticDiagnostics(nil)
+	}
 	if len(diagnostics) == 0 {
 		if opts.devel.printTypes {
 			program.PrintSourceFileWithTypes()
 		} else {
 			bindStart := time.Now()
-			_ = program.GetBindDiagnostics(targetSourceFile)
+			if targetSourceFile != nil {
+				for _, sourceFile := range targetSourceFile {
+					_ = program.GetBindDiagnostics(sourceFile)
+				}
+			} else {
+				_ = program.GetBindDiagnostics(nil)
+			}
 			bindTime = time.Since(bindStart)
 
 			// !!! the checker already reads noCheck, but do it here just for stats printing for now
 			if compilerOptions.NoCheck.IsFalseOrUnknown() {
 				checkStart := time.Now()
-				diagnostics = slices.Concat(program.GetGlobalDiagnostics(), program.GetSemanticDiagnostics(targetSourceFile))
+				diagnostics = slices.Clone(program.GetGlobalDiagnostics())
+				if targetSourceFile != nil {
+					for _, sourceFile := range targetSourceFile {
+						diagnostics = slices.Concat(diagnostics, program.GetSemanticDiagnostics(sourceFile))
+					}
+				} else {
+					diagnostics = slices.Concat(diagnostics, program.GetSemanticDiagnostics(nil))
+				}
 				checkTime = time.Since(checkStart)
 			}
 		}

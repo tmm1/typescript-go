@@ -567,7 +567,7 @@ func getCommonSourceDirectory(options *core.CompilerOptions, files []string, cur
 }
 
 type EmitOptions struct {
-	TargetSourceFile *ast.SourceFile // Single file to emit. If `nil`, emits all files
+	TargetSourceFile []*ast.SourceFile // Single file to emit. If `nil`, emits all files
 	forceDtsEmit     bool
 }
 

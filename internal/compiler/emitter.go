@@ -422,11 +422,11 @@ func sourceFileMayBeEmitted(sourceFile *ast.SourceFile, host EmitHost, forceDtsE
 	return false
 }
 
-func getSourceFilesToEmit(host EmitHost, targetSourceFile *ast.SourceFile, forceDtsEmit bool) []*ast.SourceFile {
+func getSourceFilesToEmit(host EmitHost, targetSourceFiles []*ast.SourceFile, forceDtsEmit bool) []*ast.SourceFile {
 	// !!! outFile not yet implemented, may be deprecated
 	var sourceFiles []*ast.SourceFile
-	if targetSourceFile != nil {
-		sourceFiles = []*ast.SourceFile{targetSourceFile}
+	if targetSourceFiles != nil {
+		sourceFiles = targetSourceFiles
 	} else {
 		sourceFiles = host.SourceFiles()
 	}
