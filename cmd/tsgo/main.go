@@ -59,6 +59,7 @@ type cliOptions struct {
 		listFiles     tristateFlag
 		listFilesOnly tristateFlag
 		showConfig    tristateFlag
+		sourceMap     tristateFlag
 	}
 
 	devel struct {
@@ -79,6 +80,7 @@ func (c *cliOptions) toCompilerOptions(currentDirectory string) *core.CompilerOp
 		ListFiles:     core.Tristate(c.tsc.listFiles),
 		ListFilesOnly: core.Tristate(c.tsc.listFilesOnly),
 		ShowConfig:    core.Tristate(c.tsc.showConfig),
+		SourceMap:     core.Tristate(c.tsc.sourceMap),
 	}
 
 	if c.tsc.outDir != "" {
@@ -103,6 +105,7 @@ func parseArgs() *cliOptions {
 	flag.Var(&opts.tsc.listFiles, "listFiles", diagnostics.Print_all_of_the_files_read_during_the_compilation.Format())
 	flag.Var(&opts.tsc.listFilesOnly, "listFilesOnly", diagnostics.Print_names_of_files_that_are_part_of_the_compilation_and_then_stop_processing.Format())
 	flag.Var(&opts.tsc.showConfig, "showConfig", diagnostics.Print_the_final_configuration_instead_of_building.Format())
+	flag.Var(&opts.tsc.sourceMap, "sourceMap", diagnostics.Create_source_map_files_for_emitted_JavaScript_files.Format())
 
 	flag.BoolVar(&opts.devel.quiet, "q", false, "Do not print diagnostics.")
 	flag.BoolVar(&opts.devel.quiet, "quiet", false, "Do not print diagnostics.")
