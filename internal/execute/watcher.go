@@ -78,11 +78,12 @@ func (w *watcher) hasBeenModified(program *compiler.Program) bool {
 				// fmt.Fprint(w.sys.Writer(), "build triggered from ", fileName, ": ", w.prevModified[fileName], " -> ", currState[fileName], w.sys.NewLine())
 				filesModified = true
 			}
+			// catch cases where no files are modified, but some were deleted
+			delete(w.prevModified, fileName)
 		}
-		delete(w.prevModified, fileName)
 	}
-	if len(w.prevModified) > 0 {
-		// fmt.Fprint(w.sys.Writer(), "build triggered due to ", len(w.prevModified), " files deleted", w.sys.NewLine())
+	if !filesModified && len(w.prevModified) > 0 {
+		// fmt.Fprint(w.sys.Writer(), "build triggered due to deleted file", w.sys.NewLine())
 		filesModified = true
 	}
 	w.prevModified = currState
