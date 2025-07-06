@@ -215,7 +215,7 @@ func writeWithStyleAndReset(output io.Writer, text string, formatStyle string) {
 func WriteLocation(output io.Writer, file *ast.SourceFile, pos int, formatOpts *FormattingOptions, writeWithStyleAndReset FormattedWriter) {
 	firstLine, firstChar := scanner.GetLineAndCharacterOfPosition(file, pos)
 	var relativeFileName string
-	if formatOpts != nil && !formatOpts.AbsolutePaths {
+	if formatOpts != nil {
 		relativeFileName = tspath.ConvertToRelativePath(file.FileName(), formatOpts.ComparePathsOptions)
 	} else {
 		relativeFileName = file.FileName()
@@ -355,7 +355,7 @@ func prettyPathForFileError(file *ast.SourceFile, fileErrors []*ast.Diagnostic, 
 	}
 	line, _ := scanner.GetLineAndCharacterOfPosition(file, fileErrors[0].Loc().Pos())
 	fileName := file.FileName()
-	if tspath.PathIsAbsolute(fileName) && tspath.PathIsAbsolute(formatOpts.CurrentDirectory) && !formatOpts.AbsolutePaths {
+	if tspath.PathIsAbsolute(fileName) && tspath.PathIsAbsolute(formatOpts.CurrentDirectory) {
 		fileName = tspath.ConvertToRelativePath(file.FileName(), formatOpts.ComparePathsOptions)
 	}
 	return fmt.Sprintf("%s%s:%d%s",
@@ -376,7 +376,10 @@ func WriteFormatDiagnostic(output io.Writer, diagnostic *ast.Diagnostic, formatO
 	if diagnostic.File() != nil {
 		line, character := scanner.GetLineAndCharacterOfPosition(diagnostic.File(), diagnostic.Loc().Pos())
 		fileName := diagnostic.File().FileName()
-		relativeFileName := tspath.ConvertToRelativePath(fileName, formatOpts.ComparePathsOptions)
+		relativeFileName := fileName
+		if !formatOpts.AbsolutePaths {
+			relativeFileName = tspath.ConvertToRelativePath(fileName, formatOpts.ComparePathsOptions)
+		}
 		fmt.Fprintf(output, "%s(%d,%d): ", relativeFileName, line+1, character+1)
 	}
 
