@@ -43,8 +43,8 @@ func createDiagnosticReporter(sys System, options *core.CompilerOptions) diagnos
 	if formatOpts.CI {
 		// write both, for human + machine consumption
 		return func(diagnostic *ast.Diagnostic) {
-			diagnosticwriter.FormatDiagnosticsWithColorAndContext(sys.Writer(), []*ast.Diagnostic{diagnostic}, formatOpts)
 			diagnosticwriter.WriteFormatDiagnostic(sys.Writer(), diagnostic, formatOpts)
+			diagnosticwriter.FormatDiagnosticsWithColorAndContext(sys.Writer(), []*ast.Diagnostic{diagnostic}, formatOpts)
 			sys.EndWrite()
 		}
 	}
