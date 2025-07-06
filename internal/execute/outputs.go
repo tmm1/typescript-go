@@ -3,6 +3,7 @@ package execute
 import (
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"slices"
 	"strconv"
@@ -26,6 +27,7 @@ func getFormatOptsOfSys(sys System) *diagnosticwriter.FormattingOptions {
 			CurrentDirectory:          sys.GetCurrentDirectory(),
 			UseCaseSensitiveFileNames: sys.FS().UseCaseSensitiveFileNames(),
 		},
+		AbsolutePaths: os.Getenv("GITHUB_ACTIONS") != "",
 	}
 }
 

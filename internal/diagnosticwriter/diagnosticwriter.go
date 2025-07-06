@@ -17,7 +17,8 @@ import (
 
 type FormattingOptions struct {
 	tspath.ComparePathsOptions
-	NewLine string
+	NewLine       string
+	AbsolutePaths bool
 }
 
 const (
@@ -214,7 +215,7 @@ func writeWithStyleAndReset(output io.Writer, text string, formatStyle string) {
 func WriteLocation(output io.Writer, file *ast.SourceFile, pos int, formatOpts *FormattingOptions, writeWithStyleAndReset FormattedWriter) {
 	firstLine, firstChar := scanner.GetLineAndCharacterOfPosition(file, pos)
 	var relativeFileName string
-	if formatOpts != nil {
+	if formatOpts != nil && !formatOpts.AbsolutePaths {
 		relativeFileName = tspath.ConvertToRelativePath(file.FileName(), formatOpts.ComparePathsOptions)
 	} else {
 		relativeFileName = file.FileName()
@@ -354,7 +355,7 @@ func prettyPathForFileError(file *ast.SourceFile, fileErrors []*ast.Diagnostic, 
 	}
 	line, _ := scanner.GetLineAndCharacterOfPosition(file, fileErrors[0].Loc().Pos())
 	fileName := file.FileName()
-	if tspath.PathIsAbsolute(fileName) && tspath.PathIsAbsolute(formatOpts.CurrentDirectory) {
+	if tspath.PathIsAbsolute(fileName) && tspath.PathIsAbsolute(formatOpts.CurrentDirectory) && !formatOpts.AbsolutePaths {
 		fileName = tspath.ConvertToRelativePath(file.FileName(), formatOpts.ComparePathsOptions)
 	}
 	return fmt.Sprintf("%s%s:%d%s",
