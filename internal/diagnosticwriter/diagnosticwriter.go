@@ -19,6 +19,7 @@ type FormattingOptions struct {
 	tspath.ComparePathsOptions
 	NewLine       string
 	AbsolutePaths bool
+	CI            bool
 }
 
 const (

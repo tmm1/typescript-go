@@ -28,6 +28,7 @@ func getFormatOptsOfSys(sys System) *diagnosticwriter.FormattingOptions {
 			UseCaseSensitiveFileNames: sys.FS().UseCaseSensitiveFileNames(),
 		},
 		AbsolutePaths: os.Getenv("GITHUB_ACTIONS") != "",
+		CI:            os.Getenv("CI") != "",
 	}
 }
 
@@ -39,6 +40,14 @@ func createDiagnosticReporter(sys System, options *core.CompilerOptions) diagnos
 	}
 
 	formatOpts := getFormatOptsOfSys(sys)
+	if formatOpts.CI {
+		// write both, for human + machine consumption
+		return func(diagnostic *ast.Diagnostic) {
+			diagnosticwriter.FormatDiagnosticsWithColorAndContext(sys.Writer(), []*ast.Diagnostic{diagnostic}, formatOpts)
+			diagnosticwriter.WriteFormatDiagnostic(sys.Writer(), diagnostic, formatOpts)
+			sys.EndWrite()
+		}
+	}
 	if !shouldBePretty(sys, options) {
 		return func(diagnostic *ast.Diagnostic) {
 			diagnosticwriter.WriteFormatDiagnostic(sys.Writer(), diagnostic, formatOpts)
