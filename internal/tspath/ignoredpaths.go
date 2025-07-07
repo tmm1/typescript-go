@@ -2,7 +2,7 @@ package tspath
 
 import "strings"
 
-var ignoredPaths = []string{"/node_modules/.", "/.git", "/.#"}
+var ignoredPaths = []string{"/node_modules/.", "/.git", "/.#", ".pnpm"}
 
 func ContainsIgnoredPath(path string) bool {
 	for _, p := range ignoredPaths {
